@@ -37,7 +37,6 @@ const dragStart = (event, word) => {
 const dropWord = (event, row, col) => {
   event.preventDefault();
   const word = JSON.parse(event.dataTransfer.getData('text/plain'));
-console.log(word);
   if (canPlaceWord(row, col, word)) {
     placeWord(row, col, word);  // Now places the word and its number
   } else {
@@ -60,6 +59,9 @@ const canPlaceWord = (row, col, word) => {
     // Check if the number will be clipped
     if (col <= 0) return false;  // The number will be out of bounds if placed at column 0
     
+    // Check if the number cell is empty
+    if (col > 0 && grid.value[row][col - 1] !== '') return false; // Number cell is not empty
+    
     for (let i = 0; i < length; i++) {
       // Allow overlap if the letter matches or the grid space is empty
       if (grid.value[row][col + i] !== '' && grid.value[row][col + i] !== word.text[i]) {
@@ -73,6 +75,9 @@ const canPlaceWord = (row, col, word) => {
     // Check if the number will be clipped
     if (row <= 0) return false;  // The number will be out of bounds if placed at row 0
     
+    // Check if the number cell is empty
+    if (row > 0 && grid.value[row - 1][col] !== '') return false; // Number cell is not empty
+    
     for (let i = 0; i < length; i++) {
       // Allow overlap if the letter matches or the grid space is empty
       if (grid.value[row + i][col] !== '' && grid.value[row + i][col] !== word.text[i]) {
@@ -80,7 +85,8 @@ const canPlaceWord = (row, col, word) => {
       }
     }
   }
-  return true;
+
+  return true; // Word can be placed
 };
 
 
@@ -90,9 +96,13 @@ const placeWord = (row, col, word) => {
 
   // Place the word number in the previous cell (one cell before the starting position)
   if (word.alignment === 'horizontal') {
-    grid.value[row][col - 1] = word.number + '.';  // For horizontal, number goes one cell left
+    if (col > 0 && grid.value[row][col - 1] === '') {
+      grid.value[row][col - 1] = word.number + '.';  // For horizontal, number goes one cell left
+    }
   } else {
-    grid.value[row - 1][col] = word.number + '.';  // For vertical, number goes one cell above
+    if (row > 0 && grid.value[row - 1][col] === '') {
+      grid.value[row - 1][col] = word.number + '.';  // For vertical, number goes one cell above
+    }
   }
 
   // Now place the word's letters, starting from the dropped position
@@ -177,7 +187,7 @@ const placeWord = (row, col, word) => {
 .draggable-word {
   cursor: grab;
   padding: 5px;
-  border: 1px solid black;
+  border: 0px solid black;
   display: inline-block;
   margin: 5px;
 }
