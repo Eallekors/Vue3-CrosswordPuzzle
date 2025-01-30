@@ -22,7 +22,6 @@ const nextWordNumber = ref(1);
 const draggedWord = ref(null);
 const dragGrid = ref(null); // New grid for the word being dragged
 const dragGridPosition = ref({ x: 0, y: 0 }); // Position of the drag grid
-const currentAlignment = ref('horizontal'); // Add this line
 
 const addWord = () => {
   if (currentWord.value.trim()) {
@@ -47,57 +46,25 @@ const resizeGrid = () => {
 
 const dragStart = (event, word) => {
   event.dataTransfer.setData('text/plain', JSON.stringify(word));
-  currentAlignment.value = word.alignment; // Add this line
 
   // Create a new grid for the word being dragged
   const length = word.text.length;
 
   if (word.alignment === 'horizontal') {
-    dragGrid.value = Array.from({ length: 1 }, () => Array(length + 1).fill(''));
+    dragGrid.value = Array.from({ length: 1 }, () => Array(length).fill(''));
   } else {
-    dragGrid.value = Array.from({ length: length + 1 }, () => Array(1).fill(''));
+    dragGrid.value = Array.from({ length: length }, () => Array(1).fill(''));
   }
 
   // Fill the drag grid with the word's letters
   for (let i = 0; i < length; i++) {
     if (word.alignment === 'horizontal') {
-      dragGrid.value[0][i + 1] = word.text[i];  // Horizontal alignment (shift right for number)
+      dragGrid.value[0][i] = word.text[i];  // Horizontal alignment
     } else {
-      dragGrid.value[i + 1][0] = word.text[i];  // Vertical alignment (shift down for number)
+      dragGrid.value[i][0] = word.text[i];  // Vertical alignment
     }
   }
-
-  // Place the word number in the first cell (index 0)
-  if (word.alignment === 'horizontal') {
-    dragGrid.value[0][0] = word.number + '.'; // For horizontal, place number at the beginning of the row
-  } else {
-    dragGrid.value[0][0] = word.number + '.'; // For vertical, place number at the beginning of the column
-  }
-
-  // Create a temporary element to display the number 1
-  const numberElement = document.createElement('div');
-  numberElement.textContent = ' ';  // Display the number 1
-  numberElement.style.background = 'transparent';
-  numberElement.style.border = '1px solid transparent';
-  numberElement.style.position = 'absolute';  // Ensure it can be used as a drag image
-  numberElement.style.pointerEvents = 'none';  // Prevent interaction with the element
-
-  // Append to body temporarily to capture it as a drag image
-  document.body.appendChild(numberElement);
-
-  
-  // Set the drag image to be the number element
-  event.dataTransfer.setDragImage(numberElement, 0, 0);
-
-  // Remove the temporary number element from the DOM
-  setTimeout(() => {
-    document.body.removeChild(numberElement);
-  }, 0); // Remove immediately after setting the drag image
 };
-
-
-
-
 
 
 const dragEnd = () => {
@@ -188,13 +155,8 @@ const placeWord = (row, col, word) => {
 };
 
 const updateDragGridPosition = (event) => {
-  if (currentAlignment.value === 'horizontal') {
-    dragGridPosition.value.x = event.clientX - 50;
-    dragGridPosition.value.y = event.clientY - 20;
-  } else if (currentAlignment.value === 'vertical') {
-    dragGridPosition.value.x = event.clientX - 20;
-    dragGridPosition.value.y = event.clientY - 50;
-  }
+  dragGridPosition.value.x = event.clientX;
+  dragGridPosition.value.y = event.clientY;
 };
 
 </script>
