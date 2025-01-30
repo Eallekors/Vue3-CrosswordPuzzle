@@ -25,6 +25,14 @@
     <div v-else-if="allCorrect">
       <p>You have solved the crossword!</p>
     </div>
+    <div>
+      <h3>Hints</h3>
+      <ul>
+        <li v-for="word in words" :key="word.id">
+          {{ word.number }}. {{ word.hint }}
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
@@ -33,13 +41,16 @@ import { ref, onMounted } from 'vue';
 
 const grid = ref([]);
 const userGrid = ref([]);
+const words = ref([]);
 const incorrectNumbers = ref([]);
 const allCorrect = ref(false);
 
 const loadGridFromLocalStorage = () => {
-  const savedGrid = localStorage.getItem('crosswordGrid');
-  if (savedGrid) {
-    grid.value = JSON.parse(savedGrid);
+  const savedData = localStorage.getItem('crosswordGrid');
+  if (savedData) {
+    const crosswordData = JSON.parse(savedData);
+    grid.value = crosswordData.grid;
+    words.value = crosswordData.words;
     userGrid.value = grid.value.map(row => row.map(cell => (isNaN(cell) && cell !== '' ? '' : cell)));
   } else {
     grid.value = Array.from({ length: 10 }, () => Array(10).fill(''));

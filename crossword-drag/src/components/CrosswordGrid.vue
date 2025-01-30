@@ -9,15 +9,18 @@ const words = ref([
     number: 1,
     id: Date.now(),
     alignment: 'horizontal',
+    hint: 'A trial or experiment',
   },
   {
     text: 'LONGWORD',
     number: 2,
     id: Date.now(),
     alignment: 'horizontal',
+    hint: 'A word with many letters',
   },
 ]);
 const currentWord = ref('');
+const currentHint = ref('');
 const nextWordNumber = ref(1);
 const draggedWord = ref(null);
 const dragGrid = ref(null); // New grid for the word being dragged
@@ -25,14 +28,16 @@ const dragGridPosition = ref({ x: 0, y: 0 }); // Position of the drag grid
 const currentAlignment = ref('horizontal'); // Add this line
 
 const addWord = () => {
-  if (currentWord.value.trim()) {
+  if (currentWord.value && currentHint.value) {
     words.value.push({
       text: currentWord.value.toUpperCase(), // Store words in uppercase for consistency
       number: nextWordNumber.value,
       id: Date.now(),
       alignment: 'horizontal',
+      hint: currentHint.value,
     });
     currentWord.value = '';
+    currentHint.value = '';
     nextWordNumber.value++;
   }
 };
@@ -94,11 +99,6 @@ const dragStart = (event, word) => {
     document.body.removeChild(numberElement);
   }, 0); // Remove immediately after setting the drag image
 };
-
-
-
-
-
 
 const dragEnd = () => {
   dragGrid.value = null; // Clear the drag grid when dragging ends
@@ -198,7 +198,11 @@ const updateDragGridPosition = (event) => {
 };
 
 const saveGridToLocalStorage = () => {
-  localStorage.setItem('crosswordGrid', JSON.stringify(grid.value));
+  const crosswordData = {
+    grid: grid.value,
+    words: words.value,
+  };
+  localStorage.setItem('crosswordGrid', JSON.stringify(crosswordData));
 };
 
 </script>
@@ -211,6 +215,7 @@ const saveGridToLocalStorage = () => {
     
     <div>
       <input v-model="currentWord" placeholder="Enter word" />
+      <input v-model="currentHint" placeholder="Enter hint" />
       <button @click="addWord">Add Word</button>
     </div>
     
@@ -255,6 +260,15 @@ const saveGridToLocalStorage = () => {
       </div>
     </div>
     <button @click="saveGridToLocalStorage">Save Grid</button>
+
+    <div>
+      <h3>Hints</h3>
+      <ul>
+        <li v-for="word in words" :key="word.id">
+          {{ word.number }}. {{ word.hint }}
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
