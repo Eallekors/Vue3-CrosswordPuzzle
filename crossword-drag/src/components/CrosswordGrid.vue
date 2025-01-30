@@ -197,6 +197,10 @@ const updateDragGridPosition = (event) => {
   }
 };
 
+const saveGridToLocalStorage = () => {
+  localStorage.setItem('crosswordGrid', JSON.stringify(grid.value));
+};
+
 </script>
 
 <template>
@@ -250,6 +254,7 @@ const updateDragGridPosition = (event) => {
         </div>
       </div>
     </div>
+    <button @click="saveGridToLocalStorage">Save Grid</button>
   </div>
 </template>
 

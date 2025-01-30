@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import defineComponent from './components/CrosswordGrid.vue'
+import CrosswordGrid from './components/CrosswordGrid.vue'
 </script>
 
 <template>
-<defineComponent />
+    <div>
+        <h1>Crossword Drag</h1>
+        <router-view />
+    </div>
 </template>
 
