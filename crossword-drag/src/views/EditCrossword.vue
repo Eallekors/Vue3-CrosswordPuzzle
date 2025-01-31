@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Edit Crossword</h1>
+    <h1 style="text-align: center;">Edit Crossword</h1>
     <CrosswordGrid @save="saveCrossword" />
   </div>
 </template>

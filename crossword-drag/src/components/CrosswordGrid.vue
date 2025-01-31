@@ -215,40 +215,46 @@ const clearGrid = () => {
 
 <template>
   <div @dragover="updateDragGridPosition">
-    <h2>Crossword Builder</h2>
-    <input v-model="gridSize" type="number" min="5" max="20" />
-    <button @click="resizeGrid">Resize Grid</button>
+    <h2 style="text-align: center;">Crossword Builder</h2>
     
-    <div>
-      <input v-model="currentWord" placeholder="Enter word" />
-      <input v-model="currentHint" placeholder="Enter hint" />
-      <button @click="addWord">Add Word</button>
-    </div>
-    
-    <div class="word-list">
-      <div 
-        v-for="word in words" 
-        :key="word.id" 
-        @click="toggleAlignment(word)"
-        @dragstart="dragStart($event, word)"
-        @dragend="dragEnd"
-        draggable="true"
-        class="draggable-word"
-      >
-        {{ word.number }}. {{ word.text }} ({{ word.alignment }})
+      <div style="text-align: center;">
+        <input v-model="gridSize" type="number" min="5" max="20" />
+        <button @click="resizeGrid">Resize Grid</button>
       </div>
-    </div>
-
-    <div class="grid">
-      <div v-for="(row, r) in grid" :key="r" class="row">
-        <div 
-          v-for="(cell, c) in row" 
-          :key="c" 
-          class="cell"
-          @dragover="allowDrop"
-          @drop="dropWord($event, r, c)"
-        >
-          {{ cell }}
+      
+      <div :style="{ textAlign: 'center', marginTop: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center' }">
+        <input v-model="currentWord" placeholder="Enter word" />
+        <input v-model="currentHint" placeholder="Enter hint" />
+        <button @click="addWord" style="margin: 5px;">Add Word</button>
+      </div>
+      
+      <div style="text-align: center;">
+        <div class="word-list" style="display: inline-block; max-width: 415px;">
+          <div 
+            v-for="word in words" 
+            :key="word.id" 
+            @click="toggleAlignment(word)"
+            @dragstart="dragStart($event, word)"
+            @dragend="dragEnd"
+            draggable="true"
+            class="draggable-word"
+          >
+            {{ word.number }}. {{ word.text }} ({{ word.alignment }})
+          </div>
+        </div>
+      </div>
+    <div class="container">
+      <div class="grid">
+        <div v-for="(row, r) in grid" :key="r" class="row">
+          <div 
+            v-for="(cell, c) in row" 
+            :key="c" 
+            class="cell"
+            @dragover="allowDrop"
+            @drop="dropWord($event, r, c)"
+          >
+            {{ cell }}
+          </div>
         </div>
       </div>
     </div>
@@ -272,8 +278,8 @@ const clearGrid = () => {
     </div>
 
     <div class="hints">
-      <h3>Hints</h3>
-      <ul>
+      <h3 style="text-align: center;">Hints</h3>
+      <ul style="text-align: center; list-style-type: none;">
         <li v-for="word in words" :key="word.id">
           {{ word.number }}. {{ word.hint }}
         </li>
@@ -284,14 +290,61 @@ const clearGrid = () => {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+input {
+  padding: 10px;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  width: 200px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  margin-right: 10px;
+  margin-bottom: 10;
+}
 
+input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  outline: none;
+}
+
+button {
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.word-list {
+  margin-top: 10px;
+}
+
+.draggable-word {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin: 5px 0;
+  background-color: #f8f9fa;
+  cursor: grab;
+  transition: background-color 0.3s;
+}
+
+.draggable-word:hover {
+  background-color: #e2e6ea;
+}
 .hints {
   font-family: 'Roboto', sans-serif;
   font-size: 16px;
   font-weight: bold;
   color: #333;
 }
-
 
 .grid {
   display: inline-block;
@@ -349,18 +402,13 @@ const clearGrid = () => {
   margin-top: 10px;
   display: flex;
   gap: 10px;
+  justify-content: center;
 }
-button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s, box-shadow 0.3s;
-}
-button:hover {
-  background-color: #0056b3;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+ 
 }
 </style>
