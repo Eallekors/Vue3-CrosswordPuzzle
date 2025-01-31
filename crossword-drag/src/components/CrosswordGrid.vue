@@ -189,11 +189,11 @@ const placeWord = (row, col, word) => {
 
 const updateDragGridPosition = (event) => {
   if (currentAlignment.value === 'horizontal') {
-    dragGridPosition.value.x = event.clientX - 50;
-    dragGridPosition.value.y = event.clientY - 20;
+    dragGridPosition.value.x = event.pageX - 45;
+    dragGridPosition.value.y = event.pageY - 15;
   } else if (currentAlignment.value === 'vertical') {
-    dragGridPosition.value.x = event.clientX - 20;
-    dragGridPosition.value.y = event.clientY - 50;
+    dragGridPosition.value.x = event.pageX - 15;
+    dragGridPosition.value.y = event.pageY - 45;
   }
 };
 
@@ -203,6 +203,12 @@ const saveGridToLocalStorage = () => {
     words: words.value,
   };
   localStorage.setItem('crosswordGrid', JSON.stringify(crosswordData));
+};
+
+const clearGrid = () => {
+  grid.value = Array.from({ length: gridSize.value }, () => Array(gridSize.value).fill(''));
+  words.value = [];
+  nextWordNumber.value = 1;
 };
 
 </script>
@@ -259,7 +265,11 @@ const saveGridToLocalStorage = () => {
         </div>
       </div>
     </div>
-    <button @click="saveGridToLocalStorage">Save Grid</button>
+
+    <div class="button-container">
+      <button @click="saveGridToLocalStorage">Save Grid</button>
+      <button @click="clearGrid">Clear Grid</button>
+    </div>
 
     <div>
       <h3>Hints</h3>
@@ -275,7 +285,7 @@ const saveGridToLocalStorage = () => {
 <style scoped>
 .grid {
   display: inline-block;
-  border: 2px solid black;
+  border: 1px solid black;
   margin-top: 10px;
 }
 .row {
@@ -284,7 +294,7 @@ const saveGridToLocalStorage = () => {
 .cell {
   width: 30px;
   height: 30px;
-  border: 1px solid rgb(57, 53, 53);
+  border: 0.5px solid rgb(57, 53, 53, 0.2);
   text-align: center;
   font-size: 20px;
   font-weight: bold;
@@ -304,11 +314,16 @@ const saveGridToLocalStorage = () => {
   position: absolute;
   top: 0;
   left: 0;
-  pointer-events: none; /* Ensure it doesn't interfere with dragging */
-  opacity: 0.7; /* Make it semi-transparent */
+  pointer-events: none;
+  opacity: 0.7; 
 }
 .drag-grid .cell {
-  background-color: transparent; /* Transparent background */
-  border: 1px dashed #000; /* Dashed border for visibility */
+  background-color: transparent; 
+  border: 1px dashed #000; 
+}
+.button-container {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
 }
 </style>

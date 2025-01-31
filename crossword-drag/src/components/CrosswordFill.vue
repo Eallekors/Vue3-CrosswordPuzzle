@@ -1,7 +1,7 @@
 <template>
   <div>
     <table>
-      <tbody>
+      <tbody class="grid">
         <tr v-for="(row, rowIndex) in grid" :key="rowIndex">
           <td v-for="(cell, colIndex) in row" :key="colIndex">
             <template v-if="cell !== ''">
@@ -82,16 +82,25 @@ onMounted(() => {
 </script>
 
 <style scoped>
+
+.grid {
+  display: inline-block;
+  border: 1px solid black;
+  margin-top: 10px;
+  font-weight: bold;
+}
 table {
   border-collapse: collapse;
 }
 
 td {
-  border: 1px solid black;
+  border: 0.5px solid black;
   width: 30px;
   height: 30px;
   text-align: center;
   vertical-align: middle;
+  font-weight: bold !important;
+  font-size: 20px;
 }
 
 .grid-input {
@@ -101,5 +110,7 @@ td {
   border: none;
   outline: none;
   text-transform: uppercase;
+  background-color: lightgray;
+  font-weight: bold !important;
 }
 </style>
