@@ -4,7 +4,7 @@ import CrosswordGrid from './components/CrosswordGrid.vue'
 
 <template>
     <div>
-        <h1>Crossword Drag</h1>
+       
         <router-view />
     </div>
 </template>
