@@ -16,6 +16,7 @@
               <input 
                 v-if="isNaN(cell)" 
                 v-model="userGrid[rowIndex][colIndex]" 
+                :class="{'incorrect': isIncorrect(rowIndex, colIndex)}"
                 class="grid-input" 
                 @input="onInput($event, rowIndex, colIndex)" 
                 maxlength="1" 
@@ -30,9 +31,7 @@
       <button @click="checkGrid">Check</button>
     </div>
   </div>
-  <div v-if="incorrectNumbers.length > 0">
-    <p>Incorrect numbers: {{ incorrectNumbers.join(', ') }}</p>
-  </div>
+  <h3 v-if="allCorrect">Congratulations! You solved the crossword!</h3>
 </template>
 
 <script setup>
@@ -64,7 +63,7 @@ const checkGrid = () => {
   grid.value.forEach((row, rowIndex) => {
     row.forEach((cell, colIndex) => {
       if (isNaN(cell) && cell !== userGrid.value[rowIndex][colIndex]) {
-        incorrectNumbers.value.push(cell);
+        incorrectNumbers.value.push(`${rowIndex},${colIndex}`);
         allCorrect.value = false;
       }
     });
@@ -74,6 +73,10 @@ const checkGrid = () => {
 const onInput = (event, rowIndex, colIndex) => {
   const value = event.target.value.toUpperCase();
   userGrid.value[rowIndex][colIndex] = value;
+};
+
+const isIncorrect = (rowIndex, colIndex) => {
+  return incorrectNumbers.value.includes(`${rowIndex},${colIndex}`);
 };
 
 onMounted(() => {
@@ -213,5 +216,9 @@ li {
   button {
     width: 100%;
   }
+}
+
+.incorrect {
+  border: 2px solid red;
 }
 </style>
