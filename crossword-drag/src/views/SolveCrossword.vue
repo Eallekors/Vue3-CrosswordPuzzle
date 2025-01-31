@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Solve Crossword</h1>
+    <h1 style="text-align: center;">Solve Crossword</h1>
     <CrosswordFill />
   </div>
 </template>

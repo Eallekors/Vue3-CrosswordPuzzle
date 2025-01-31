@@ -285,8 +285,11 @@ const clearGrid = () => {
 <style scoped>
 .grid {
   display: inline-block;
-  border: 1px solid black;
+  border: 1px solid #ccc;
   margin-top: 10px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 .row {
   display: flex;
@@ -294,11 +297,15 @@ const clearGrid = () => {
 .cell {
   width: 30px;
   height: 30px;
-  border: 0.5px solid rgb(57, 53, 53, 0.2);
+  border: 1px solid #ddd;
   text-align: center;
   font-size: 20px;
   font-weight: bold;
   line-height: 30px;
+  transition: background-color 0.3s, color 0.3s;
+}
+.cell:hover {
+  background-color: #f0f0f0;
 }
 .word-list {
   margin-top: 10px;
@@ -306,24 +313,44 @@ const clearGrid = () => {
 .draggable-word {
   cursor: grab;
   padding: 5px;
-  border: 0px solid black;
+  border: 1px solid #ddd;
+  border-radius: 4px;
   display: inline-block;
   margin: 5px;
+  background-color: #f9f9f9;
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+.draggable-word:hover {
+  background-color: #e9e9e9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 .drag-grid {
   position: absolute;
   top: 0;
   left: 0;
   pointer-events: none;
-  opacity: 0.7; 
+  opacity: 0.8;
 }
 .drag-grid .cell {
-  background-color: transparent; 
-  border: 1px dashed #000; 
+  background-color: transparent;
+  border: 1px dashed #000;
 }
 .button-container {
   margin-top: 10px;
   display: flex;
   gap: 10px;
+}
+button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+button:hover {
+  background-color: #0056b3;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 </style>
