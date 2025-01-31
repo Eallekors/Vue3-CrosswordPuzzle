@@ -271,7 +271,7 @@ const clearGrid = () => {
       <button @click="clearGrid">Clear Grid</button>
     </div>
 
-    <div>
+    <div class="hints">
       <h3>Hints</h3>
       <ul>
         <li v-for="word in words" :key="word.id">
@@ -283,6 +283,16 @@ const clearGrid = () => {
 </template>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+.hints {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+
 .grid {
   display: inline-block;
   border: 1px solid #ccc;

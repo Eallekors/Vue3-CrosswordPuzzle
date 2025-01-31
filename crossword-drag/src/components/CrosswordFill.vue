@@ -83,6 +83,15 @@ onMounted(() => {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+.hints {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
 .grid {
   display: inline-block;
   border: 1px solid #ccc;
@@ -98,6 +107,11 @@ table {
   max-width: 100%;
   margin: auto;
 
+}
+.hint {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  color: #333;
 }
 
 td {
