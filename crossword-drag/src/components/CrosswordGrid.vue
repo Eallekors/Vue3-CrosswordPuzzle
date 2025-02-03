@@ -326,6 +326,7 @@ const save = async () => {
             @drop="dropWord($event, r, c)"
             :draggable="typeof cell === 'string' && cell.trim().endsWith('.')"
             @dragstart="(typeof cell === 'string' && cell.trim().endsWith('.')) ? dragStartFromGrid(r, c, $event) : null"
+            @dragend="dragEnd"
           >
             {{ cell }}
           </div>
