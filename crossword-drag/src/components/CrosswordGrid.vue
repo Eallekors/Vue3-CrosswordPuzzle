@@ -212,6 +212,36 @@ const clearGrid = () => {
   nextWordNumber.value = 1;
 };
 
+
+const saveLoading = ref(false);
+const token = decodeURIComponent(new URL(window.location).searchParams.get("token"));
+const urlBase = decodeURIComponent(new URL(window.location).searchParams.get("urlBase"));
+
+const save = async () => {
+  saveLoading.value = true;
+  try {
+    const crosswordData = {
+      grid: grid.value,
+      words: words.value,
+    };
+    console.log("Posting game data to API:", crosswordData);
+
+    const res = await fetch(
+      `${urlBase}/api/widget/v1/settings?token=${token}`,
+      {
+        body: JSON.stringify(crosswordData),
+        method: "POST",
+      }
+    );
+
+    console.log("Game saved: ", res);
+  } catch (error) {
+    console.log("Save error", error);
+ } finally {
+    saveLoading.value = false;
+  }
+};
+
 </script>
 
 <template>
@@ -276,6 +306,7 @@ const clearGrid = () => {
     <div class="button-container">
       <button @click="saveGridToLocalStorage">Save Grid</button>
       <button @click="clearGrid">Clear Grid</button>
+      <button @click="save" :disabled="saveLoading">Save to Server</button>
     </div>
 
     <div class="hints">

@@ -41,8 +41,11 @@ const grid = ref([]);
 const userGrid = ref([]);
 const words = ref([]);
 const incorrectNumbers = ref([]);
+const saveLoading = ref(false);
 const allCorrect = ref(false);
 const gridContainerRef = ref(null);
+const token = decodeURIComponent(new URL(window.location).searchParams.get("token"));
+const urlBase = decodeURIComponent(new URL(window.location).searchParams.get("urlBase"));
 
 const loadGridFromLocalStorage = () => {
   const savedData = localStorage.getItem('crosswordGrid');
@@ -79,9 +82,38 @@ const isIncorrect = (rowIndex, colIndex) => {
   return incorrectNumbers.value.includes(`${rowIndex},${colIndex}`);
 };
 
+const load = async () => {
+  saveLoading.value = true;
+  try {
+    const res = await fetch(
+      `${urlBase}/api/widget/v1/settings?token=${token}`,
+      {
+        method: "GET",
+      }
+    );
+
+    const crosswordData = await res.json();
+    console.log("Game loaded: ", crosswordData);
+
+    if (crosswordData && crosswordData.grid && crosswordData.words) {
+      grid.value = crosswordData.grid;
+      words.value = crosswordData.words;
+      userGrid.value = grid.value.map(row => row.map(cell => (isNaN(cell) && cell !== '' ? '' : cell)));
+    } else {
+      grid.value = Array.from({ length: 10 }, () => Array(10).fill(''));
+      userGrid.value = Array.from({ length: 10 }, () => Array(10).fill(''));
+    }
+  } catch (error) {
+    console.log("Load error", error);
+    grid.value = Array.from({ length: 10 }, () => Array(10).fill(''));
+    userGrid.value = Array.from({ length: 10 }, () => Array(10).fill(''));
+  } finally {
+    saveLoading.value = false;
+  }
+};
+
 onMounted(() => {
-  loadGridFromLocalStorage();
-  
+  load(); 
 });
 </script>
 
