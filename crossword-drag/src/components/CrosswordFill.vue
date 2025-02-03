@@ -113,7 +113,8 @@ const load = async () => {
 };
 
 onMounted(() => {
-  load(); 
+  loadGridFromLocalStorage();
+  //load(); 
 });
 </script>
 
@@ -168,6 +169,7 @@ td:hover {
 .grid-input {
   width: 100%;
   height: 100%;
+  border: none;
   text-align: center;
   outline: none;
   padding: 0;

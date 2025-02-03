@@ -10,13 +10,18 @@ const words = ref([
     id: Date.now(),
     alignment: 'horizontal',
     hint: 'A trial or experiment',
+    // placement info (if placed)
+    startRow: null,
+    startCol: null,
   },
   {
     text: 'LONGWORD',
     number: 2,
-    id: Date.now(),
+    id: Date.now() + 1,
     alignment: 'horizontal',
     hint: 'A word with many letters',
+    startRow: null,
+    startCol: null,
   },
 ]);
 const currentWord = ref('');
@@ -26,7 +31,11 @@ const draggedWord = ref(null);
 const dragGrid = ref(null); 
 const dragGridPosition = ref({ x: 0, y: 0 }); 
 const currentAlignment = ref('horizontal');
+const saveLoading = ref(false);
+const token = decodeURIComponent(new URL(window.location).searchParams.get("token"));
+const urlBase = decodeURIComponent(new URL(window.location).searchParams.get("urlBase"));
 
+// Add a new word (from the list)
 const addWord = () => {
   if (currentWord.value && currentHint.value) {
     words.value.push({
@@ -35,6 +44,8 @@ const addWord = () => {
       id: Date.now(),
       alignment: 'horizontal',
       hint: currentHint.value,
+      startRow: null,
+      startCol: null,
     });
     currentWord.value = '';
     currentHint.value = '';
@@ -50,6 +61,7 @@ const resizeGrid = () => {
   grid.value = Array.from({ length: gridSize.value }, () => Array(gridSize.value).fill(''));
 };
 
+// Called when dragging a word from the list (or from the grid via reuse)
 const dragStart = (event, word) => {
   event.dataTransfer.setData('text/plain', JSON.stringify(word));
   currentAlignment.value = word.alignment; 
@@ -73,13 +85,9 @@ const dragStart = (event, word) => {
   }
 
   // Place the word number in the first cell (index 0)
-  if (word.alignment === 'horizontal') {
-    dragGrid.value[0][0] = word.number + '.'; 
-  } else {
-    dragGrid.value[0][0] = word.number + '.'; 
-  }
+  dragGrid.value[0][0] = word.number + '.';
 
-  // Create a temporary element to display the number 1
+  // Create a temporary element to display an empty drag image
   const numberElement = document.createElement('div');
   numberElement.textContent = ' ';  
   numberElement.style.background = 'transparent';
@@ -89,12 +97,7 @@ const dragStart = (event, word) => {
 
   // Append to body temporarily to capture it as a drag image
   document.body.appendChild(numberElement);
-
-  
-
   event.dataTransfer.setDragImage(numberElement, 0, 0);
-
-  
   setTimeout(() => {
     document.body.removeChild(numberElement);
   }, 0);
@@ -102,13 +105,20 @@ const dragStart = (event, word) => {
 
 const dragEnd = () => {
   dragGrid.value = null;
+  draggedWord.value = null;
 };
 
 const dropWord = (event, row, col) => {
   event.preventDefault();
-  const word = JSON.parse(event.dataTransfer.getData('text/plain'));
+  // Get the drag data and check that it exists.
+  const data = event.dataTransfer.getData('text/plain');
+  if (!data) {
+    console.warn("No drag data available");
+    return;
+  }
+  const word = JSON.parse(data);
   if (canPlaceWord(row, col, word)) {
-    placeWord(row, col, word);  
+    placeWord(row, col, word);
   } else {
     alert("Word can't be placed here! It must connect correctly.");
   }
@@ -119,75 +129,64 @@ const allowDrop = (event) => {
 };
 
 // Validate word placement with proper connections
-
 const canPlaceWord = (row, col, word) => {
   const length = word.text.length;
 
   if (word.alignment === 'horizontal') {
     // Check if the word goes out of bounds horizontally
-    if (col + length > gridSize.value) return false; // Out of bounds horizontally
+    if (col + length > gridSize.value) return false;
     
-    // Check if the number will be clipped
-    if (col <= 0) return false;  // The number will be out of bounds if placed at column 0
+    // Check if the number will be clipped (placed one cell to the left)
+    if (col <= 0) return false;
     
     // Check if the number cell is empty
-    if (col > 0 && grid.value[row][col - 1] !== '') return false; // Number cell is not empty
+    if (col > 0 && grid.value[row][col - 1] !== '') return false;
     
     for (let i = 0; i < length; i++) {
-      // Allow overlap if the letter matches or the grid space is empty
+      // Allow overlap only if the letter matches or the grid space is empty
       if (grid.value[row][col + i] !== '' && grid.value[row][col + i] !== word.text[i]) {
-        return false; // Prevent overlapping with a different letter
+        return false;
       }
     }
   } else { // Vertical
-    // Check if the word goes out of bounds vertically
-    if (row + length > gridSize.value) return false; // Out of bounds vertically
-    
-    // Check if the number will be clipped
-    if (row <= 0) return false;  // The number will be out of bounds if placed at row 0
-    
-    // Check if the number cell is empty
-    if (row > 0 && grid.value[row - 1][col] !== '') return false; // Number cell is not empty
+    if (row + length > gridSize.value) return false;
+    if (row <= 0) return false;
+    if (row > 0 && grid.value[row - 1][col] !== '') return false;
     
     for (let i = 0; i < length; i++) {
-      // Allow overlap if the letter matches or the grid space is empty
       if (grid.value[row + i][col] !== '' && grid.value[row + i][col] !== word.text[i]) {
-        return false; // Prevent overlapping with a different letter
+        return false;
       }
     }
   }
-
-  return true; // Word can be placed
+  return true;
 };
 
-
-// Place the word and its number in the grid
+// Place the word (and its number) on the grid, and store its placement coordinates
 const placeWord = (row, col, word) => {
   const length = word.text.length;
 
-  // Place the word number in the previous cell (one cell before the starting position)
   if (word.alignment === 'horizontal') {
     if (col > 0 && grid.value[row][col - 1] === '') {
-      grid.value[row][col - 1] = word.number + '.';  // For horizontal, number goes one cell left
+      grid.value[row][col - 1] = word.number + '.';
+    }
+    for (let i = 0; i < length; i++) {
+      grid.value[row][col + i] = word.text[i];
     }
   } else {
     if (row > 0 && grid.value[row - 1][col] === '') {
-      grid.value[row - 1][col] = word.number + '.';  // For vertical, number goes one cell above
+      grid.value[row - 1][col] = word.number + '.';
     }
-  }
-
-  // Now place the word's letters, starting from the dropped position
-  for (let i = 0; i < length; i++) {
-    if (word.alignment === 'horizontal') {
-      // Place the word's letters horizontally
-      grid.value[row][col + i] = word.text[i];
-    } else {
-      // Place the word's letters vertically
+    for (let i = 0; i < length; i++) {
       grid.value[row + i][col] = word.text[i];
     }
   }
+  // Save the placement coordinates on the word object.
+  word.startRow = row;
+  word.startCol = col;
 };
 
+// When dragging from anywhere (for live drag image updates)
 const updateDragGridPosition = (event) => {
   if (currentAlignment.value === 'horizontal') {
     dragGridPosition.value.x = event.pageX - 45;
@@ -195,6 +194,53 @@ const updateDragGridPosition = (event) => {
   } else if (currentAlignment.value === 'vertical') {
     dragGridPosition.value.x = event.pageX - 15;
     dragGridPosition.value.y = event.pageY - 45;
+  }
+};
+
+// Remove a placed word from the grid. This clears both the number cell and the letter cells.
+const removeWordFromGrid = (word) => {
+  // Only remove if we have valid placement coordinates.
+  if (word.startRow === null || word.startCol === null) return;
+  
+  const length = word.text.length;
+  if (word.alignment === 'horizontal') {
+    if (word.startCol > 0 && grid.value[word.startRow][word.startCol - 1] === word.number + '.') {
+      grid.value[word.startRow][word.startCol - 1] = '';
+    }
+    for (let i = 0; i < length; i++) {
+      if (grid.value[word.startRow][word.startCol + i] === word.text[i]) {
+        grid.value[word.startRow][word.startCol + i] = '';
+      }
+    }
+  } else {
+    if (word.startRow > 0 && grid.value[word.startRow - 1][word.startCol] === word.number + '.') {
+      grid.value[word.startRow - 1][word.startCol] = '';
+    }
+    for (let i = 0; i < length; i++) {
+      if (grid.value[word.startRow + i][word.startCol] === word.text[i]) {
+        grid.value[word.startRow + i][word.startCol] = '';
+      }
+    }
+  }
+  // Optionally reset the placement info so that the word can be placed again later.
+  word.startRow = null;
+  word.startCol = null;
+};
+
+// Start dragging a word that has already been placed on the grid.
+// This function is bound to the grid cell that holds the number label.
+const dragStartFromGrid = (row, col, event) => {
+  // Expect the cell to contain something like "1."
+  const cellContent = grid.value[row][col];
+  // Remove any extra whitespace and the dot; then convert to a number.
+  const num = parseInt(cellContent);
+  const word = words.value.find(w => w.number === num);
+  if (word) {
+    // Remove the word from the grid so it can be repositioned.
+    removeWordFromGrid(word);
+    draggedWord.value = word;
+    // Use the existing dragStart function to initialize drag data.
+    dragStart(event, word);
   }
 };
 
@@ -211,11 +257,6 @@ const clearGrid = () => {
   words.value = [];
   nextWordNumber.value = 1;
 };
-
-
-const saveLoading = ref(false);
-const token = decodeURIComponent(new URL(window.location).searchParams.get("token"));
-const urlBase = decodeURIComponent(new URL(window.location).searchParams.get("urlBase"));
 
 const save = async () => {
   saveLoading.value = true;
@@ -237,43 +278,43 @@ const save = async () => {
     console.log("Game saved: ", res);
   } catch (error) {
     console.log("Save error", error);
- } finally {
+  } finally {
     saveLoading.value = false;
   }
 };
-
 </script>
 
 <template>
   <div @dragover="updateDragGridPosition">
     <h2 style="text-align: center;">Crossword Builder</h2>
     
-      <div style="text-align: center;">
-        <input v-model="gridSize" type="number" min="5" max="20" />
-        <button @click="resizeGrid">Resize Grid</button>
-      </div>
-      
-      <div :style="{ textAlign: 'center', marginTop: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center' }">
-        <input v-model="currentWord" placeholder="Enter word" />
-        <input v-model="currentHint" placeholder="Enter hint" />
-        <button @click="addWord" style="margin: 5px;">Add Word</button>
-      </div>
-      
-      <div style="text-align: center;">
-        <div class="word-list" style="display: inline-block; max-width: 415px;">
-          <div 
-            v-for="word in words" 
-            :key="word.id" 
-            @click="toggleAlignment(word)"
-            @dragstart="dragStart($event, word)"
-            @dragend="dragEnd"
-            draggable="true"
-            class="draggable-word"
-          >
-            {{ word.number }}. {{ word.text }} ({{ word.alignment }})
-          </div>
+    <div style="text-align: center;">
+      <input v-model="gridSize" type="number" min="5" max="20" />
+      <button @click="resizeGrid">Resize Grid</button>
+    </div>
+    
+    <div :style="{ textAlign: 'center', marginTop: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center' }">
+      <input v-model="currentWord" placeholder="Enter word" />
+      <input v-model="currentHint" placeholder="Enter hint" />
+      <button @click="addWord" style="margin: 5px;">Add Word</button>
+    </div>
+    
+    <div style="text-align: center;">
+      <div class="word-list" style="display: inline-block; max-width: 415px;">
+        <div 
+          v-for="word in words" 
+          :key="word.id" 
+          @click="toggleAlignment(word)"
+          @dragstart="dragStart($event, word)"
+          @dragend="dragEnd"
+          draggable="true"
+          class="draggable-word"
+        >
+          {{ word.number }}. {{ word.text }} ({{ word.alignment }})
         </div>
       </div>
+    </div>
+    
     <div class="container">
       <div class="grid">
         <div v-for="(row, r) in grid" :key="r" class="row">
@@ -283,6 +324,8 @@ const save = async () => {
             class="cell"
             @dragover="allowDrop"
             @drop="dropWord($event, r, c)"
+            :draggable="typeof cell === 'string' && cell.trim().endsWith('.')"
+            @dragstart="(typeof cell === 'string' && cell.trim().endsWith('.')) ? dragStartFromGrid(r, c, $event) : null"
           >
             {{ cell }}
           </div>
@@ -290,7 +333,7 @@ const save = async () => {
       </div>
     </div>
 
-    <!-- Drag Grid -->
+    <!-- Drag Grid Preview -->
     <div v-if="dragGrid" class="drag-grid" :style="{ top: dragGridPosition.y + 'px', left: dragGridPosition.x + 'px' }">
       <div v-for="(row, r) in dragGrid" :key="r" class="row">
         <div 
@@ -319,6 +362,7 @@ const save = async () => {
     </div>
   </div>
 </template>
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
