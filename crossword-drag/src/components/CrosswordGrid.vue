@@ -184,6 +184,12 @@ const placeWord = (row, col, word) => {
   // Save the placement coordinates on the word object.
   word.startRow = row;
   word.startCol = col;
+
+  // Update the words array with the updated word object
+  const index = words.value.findIndex(w => w.id === word.id);
+  if (index !== -1) {
+    words.value[index] = word;
+  }
 };
 
 // When dragging from anywhere (for live drag image updates)

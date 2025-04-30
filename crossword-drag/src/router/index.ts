@@ -4,6 +4,10 @@ import SolveCrossword from '../views/SolveCrossword.vue'
 
 const routes = [
   {
+    path: '/',
+    redirect: '/edit'
+  },
+  {
     path: '/edit',
     name: 'edit',
     component: EditCrossword,
